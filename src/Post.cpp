@@ -223,19 +223,24 @@ void Post::log2fc_c(const int t1,const int t2,const int c)
 {
     for (unsigned p=0;p<zz().size();p++) if (pq().at(c).at(p)==1) {
         if (op().rep()) {
+            vector<double> diffvec;
             for (int s=0;s<op().ssize().at(0);s++) {
-                double log2_1=0,log2_2=0;
-                int nobs=0;
+                vector<double> D;
                 for (unsigned q=0;q<zz().at(p).size();q++) for (unsigned f=0;f<zz().at(p).at(q).size();f++) {
                     const vector<double>& ref=zz().at(p).at(q).at(f);
                     if (obs(ref.at(op().np().at(t1)+s))) {
-                        log2_1 += ref.at(op().np().at(t1)+s);
-                        log2_2 += ref.at(op().np().at(t2)+s);
-                        nobs++; 
+                        D.push_back(ref.at(op().np().at(t1)+s)-ref.at(op().np().at(t2)+s));
                     }
                 }
-                d_log2fc.at(c).at(p).push_back(nobs>0 ? (log2_1-log2_2)/nobs : NAN);
+                copy(D.begin(),D.end(),back_inserter(diffvec));
+                d_log2fc_s.at(c).at(p).push_back(D.size()>0 ? accumulate(D.begin(),D.end(),0.)/D.size() : NAN);
             }
+            d_log2fc.at(c).at(p)=accumulate(diffvec.begin(),diffvec.end(),0.)/diffvec.size();
+            double log2fc_var=0;
+            for (unsigned s=0;s<diffvec.size();s++) {
+                log2fc_var+=pow(diffvec.at(s)-d_log2fc.at(c).at(p),2);
+            }
+            d_log2fc_SE.at(c).at(p)=sqrt(log2fc_var/(diffvec.size()-2));
         } else {
             double log2_1=0,log2_2=0;
             int nobs1=0,nobs2=0;
@@ -252,7 +257,18 @@ void Post::log2fc_c(const int t1,const int t2,const int c)
                     }
                 }
             }
-            d_log2fc.at(c).at(p).push_back(nobs1>0 and nobs2>0 ? log2_1/nobs1-log2_2/nobs2 : 0);
+            d_log2fc.at(c).at(p)=(nobs1>0 and nobs2>0 ? log2_1/nobs1-log2_2/nobs2 : 0);
+            double s1=0,s2=0;
+            for (unsigned q=0;q<zz().at(p).size();q++) for (unsigned f=0;f<zz().at(p).at(q).size();f++) {
+                const vector<double>& ref=zz().at(p).at(q).at(f);
+                for (int s=0;s<op().ssize().at(t1);s++) if (obs(ref.at(op().np().at(t1)+s))) {
+                    s1 += pow(ref.at(op().np().at(t1)+s)-log2_1/nobs1,2);
+                }
+                for (int s=0;s<op().ssize().at(t2);s++) if (obs(ref.at(op().np().at(t2)+s))) {
+                    s2 += pow(ref.at(op().np().at(t2)+s)-log2_2/nobs2,2);
+                }
+            }
+            d_log2fc_SE.at(c).at(p)=sqrt((s1+s2)/(nobs1+nobs2-2));
         }
     }
 }
@@ -263,7 +279,9 @@ Post::Post(const Pre& pr) :
 {
     d_logf0.assign(op().nc(),vector<double> (yy().size()));
     d_logf1.assign(op().nc(),vector<double> (yy().size()));
-    d_log2fc.assign(op().nc(),vector<vector<double> > (yy().size()));
+    d_log2fc.assign(op().nc(),vector<double> (yy().size()));
+    d_log2fc_s.assign(op().nc(),vector<vector<double> > (yy().size()));
+    d_log2fc_SE.assign(op().nc(),vector<double> (yy().size()));
     d_nf.assign(op().nc(),vector<vector<int> >(yy().size()));
     d_pq.assign(op().nc(),vector<int>(yy().size()));
     for (int c=0;c<op().nc();c++) {

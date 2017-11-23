@@ -199,7 +199,7 @@ void print_analysis(const Pre& pr,const Est& es,const Est& es_)
         ofs<<"\tnPeptide";
         if (op.level()==3) ofs<<"\tnFragment";
     }
-    ofs<<"\tLabel\tLabel2\tlog2FC\tscore\tSignedScore\tFDR\tlog_oddsDE";
+    ofs<<"\tLabel\tLabel2\tlog2FC\tlog2FC_SE\tscore\tSignedScore\tFDR\tlog_oddsDE";
     if (es_.mo().modulebool()) ofs<<"\tscore_\tFDR_\tlog_oddsDE_";
 
     if (op.rep()) {
@@ -213,18 +213,13 @@ void print_analysis(const Pre& pr,const Est& es,const Est& es_)
             ofs<<'\n'<<pr.pidvec().at(p);
             if (op.level()==3) ofs<<'\t'<<count_if(po.nf().at(c).at(p).begin(),po.nf().at(c).at(p).end(),bind2nd(greater_equal<int>(),op.min_f()));
             if (op.level()>=2) ofs<<'\t'<<accumulate(po.nf().at(c).at(p).begin(),po.nf().at(c).at(p).end(),0);
-            const vector<double>& ref=po.log2fc().at(c).at(p);
-            vector<double> vlog2fc;
-            for (unsigned s=0;s<ref.size();s++) {
-                if (obs(ref.at(s))) vlog2fc.push_back(ref.at(s));
-            }
-            const double log2FC=accumulate(vlog2fc.begin(),vlog2fc.end(),0.)/vlog2fc.size();
             const double score=1/(exp(-es.lo().at(i))+1);
             ofs<<'\t'<<t1<<'/'<<t2
                 <<'\t'<<op.labels().at(t1)<<'/'<<op.labels().at(t2)
-                <<'\t'<<log2FC
+                <<'\t'<<po.log2fc().at(c).at(p)
+                <<'\t'<<po.log2fc_SE().at(c).at(p)
                 <<'\t'<<score
-                <<'\t'<<(log2FC>0?1:-1)*score
+                <<'\t'<<(po.log2fc().at(c).at(p)>0?1:-1)*score
                 <<'\t'<<es.fdr().find(es.lo().at(i))->second.fdr<<'\t'<<es.lo().at(i);
             cp.at(c).at(p)=i;
             i++;
@@ -237,8 +232,13 @@ void print_analysis(const Pre& pr,const Est& es,const Est& es_)
                 }
             }
             if (op.rep()) {
+                const vector<double>& ref=po.log2fc_s().at(c).at(p);
                 for (int s=0;s<op.ssize().at(0);s++) {
                     if (obs(ref.at(s))) ofs<<'\t'<<ref.at(s); else ofs<<"\tNA";
+                }
+                vector<double> vlog2fc;
+                for (unsigned s=0;s<ref.size();s++) {
+                    if (obs(ref.at(s))) vlog2fc.push_back(ref.at(s));
                 }
                 ofs<<'\t'<<count_if(vlog2fc.begin(),vlog2fc.end(),bind2nd(greater<double>(),0))
                     <<'\t'<<count_if(vlog2fc.begin(),vlog2fc.end(),bind2nd(less<double>(),0));
@@ -261,12 +261,7 @@ void print_analysis(const Pre& pr,const Est& es,const Est& es_)
         ofs_<<'\n'<<pr.pidvec().at(p);
         for (int c=0;c<op.nc();c++) {
             if (po.pq().at(c).at(p)==1) {
-                const vector<double>& ref=po.log2fc().at(c).at(p);
-                vector<double> vlog2fc;
-                for (unsigned s=0;s<ref.size();s++) {
-                    if (obs(ref.at(s))) vlog2fc.push_back(ref.at(s));
-                }
-                ofs_<<'\t'<<accumulate(vlog2fc.begin(),vlog2fc.end(),0.)/vlog2fc.size()
+                ofs_<<'\t'<<po.log2fc().at(c).at(p)
                     <<'\t'<<1/(exp(-es.lo().at(cp.at(c).at(p)))+1)<<'\t'<<es.fdr().find(es.lo().at(cp.at(c).at(p)))->second.fdr<<'\t'<<es.lo().at(cp.at(c).at(p));
             } else {
                 ofs_<<"\t\t\t\t";

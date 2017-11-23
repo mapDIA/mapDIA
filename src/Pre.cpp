@@ -214,7 +214,7 @@ void Pre::setPseudoCV()
             }
             const double ave=accumulate(in_f.begin(),in_f.end(),0.)/in_f.size();
             double var=0;
-            for (int l=0;l<in_f.size();l++) var+=pow(in_f.at(l)-ave,2)/(in_f.size()-1);
+            for (unsigned l=0;l<in_f.size();l++) var+=pow(in_f.at(l)-ave,2)/(in_f.size()-1);
             aveCV+=sqrt(var)/ave;
             nf++;
         }

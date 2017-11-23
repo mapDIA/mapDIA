@@ -28,8 +28,8 @@ class Post
     vector<vector<vector<vector<double> > > > d_zz;
     const vector<vector<vector<vector<double> > > > d_yy;
     const vector<vector<vector<vector<int> > > > d_im;
-    vector<vector<vector<double> > > d_log2fc;
-    vector<vector<double> > d_logf0,d_logf1;
+    vector<vector<vector<double> > > d_log2fc_s;
+    vector<vector<double> > d_logf0,d_logf1,d_log2fc,d_log2fc_SE;
     vector<vector<vector<int> > > d_nf;
     vector<vector<int> > d_pq;
     const vector<vector<vector<vector<int> > > > d_yobs;
@@ -48,7 +48,9 @@ class Post
     const vector<vector<vector<vector<double> > > >& yy() const { return d_yy; }
     const vector<vector<vector<vector<int> > > >& im() const { return d_im; }
     const vector<vector<vector<vector<double> > > >& zz() const { return d_zz; }
-    const vector<vector<vector<double> > >& log2fc() const { return d_log2fc; }
+    const vector<vector<double> >& log2fc() const { return d_log2fc; }
+    const vector<vector<vector<double> > >& log2fc_s() const { return d_log2fc_s; }
+    const vector<vector<double> >& log2fc_SE() const { return d_log2fc_SE; }
     const Option& op() const { return d_op; }
     const vector<vector<double> >& logf0() const { return d_logf0; }
     const vector<vector<double> >& logf1() const { return d_logf1; }

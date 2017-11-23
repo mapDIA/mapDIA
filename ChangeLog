@@ -84,3 +84,6 @@ pseudoCV option added.
 
 2017-02-06 (v3.0.2) :
 SignedScore column added.
+
+2017-11-24 (v3.1.0) :
+log2FC_SE column added.

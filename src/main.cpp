@@ -40,7 +40,7 @@ int main(int argc, char** argv)
         return 0;
     }
     if (string(argv[ 1 ])=="--version") {
-        cout<<"mapDIA 3.0.2\n";
+        cout<<"mapDIA 3.1.0\n";
         return 0;
     }
 
