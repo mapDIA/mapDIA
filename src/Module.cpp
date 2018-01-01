@@ -27,7 +27,7 @@ void Module::setModulebool(const string& str0)
     istringstream iss(str0);
     string str1;
     iss>>str1;
-    d_modulebool=ifstream(str1.c_str());
+    d_modulebool=static_cast<bool>(ifstream(str1.c_str()));
 }
 
 
